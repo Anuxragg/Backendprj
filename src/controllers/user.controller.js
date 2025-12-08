@@ -3,8 +3,8 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
-import { useReducer } from "react"
-import { ApiResonse } from "../utils/ApiResponse.js"
+// import { useReducer } from "react"
+import { ApiResponse } from "../utils/ApiResponse.js"
 
 
 
@@ -19,7 +19,7 @@ const registerUser = asyncHandler( async(req, res) => {
     // check for user creation
     // return res
     const {fullName, email, username, password} = req.body
-    console.log("email:", email);
+    // console.log("email:", email);
 
     if(
         [fullName, email, username, password].some((field) =>
@@ -27,7 +27,7 @@ const registerUser = asyncHandler( async(req, res) => {
     ){
        throw new ApiError(400,"All fields are required")
     }
-    User.findOne({ //for cheking already existing email
+    const existedUser = await User.findOne({ //for cheking already existing email
         $or: [{username}, {email}]
     })
     if(existedUser) {
@@ -35,7 +35,8 @@ const registerUser = asyncHandler( async(req, res) => {
     }
 
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+
   if(!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required")
   }
@@ -65,7 +66,7 @@ if(!createdUser){
 }
 
 return res.status(201).json(
-    new ApiResponse(200, createUser, "User registered Successfully")
+    new ApiResponse(200, createdUser, "User registered Successfully")
 )
      
 
